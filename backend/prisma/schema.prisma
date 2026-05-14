@@ -15,6 +15,11 @@ model User {
   name      String
   role      Role
   createdAt DateTime @default(now())
+
+  // İlişkiler
+  veli     Veli?
+  sofor    Sofor?
+  ogretmen Ogretmen?
 }
 
 enum Role {
@@ -22,4 +27,46 @@ enum Role {
   SOFOR
   VELI
   OGRETMEN
+}
+
+model Veli {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ogrenciler Ogrenci[]
+}
+
+model Sofor {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plaka      String
+  aracTipi   String?
+  kapasite   Int       @default(20)
+  ogrenciler Ogrenci[]
+}
+
+model Ogretmen {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sinif      String?   // Hangi sınıfın öğretmeni olduğu
+}
+
+model Ogrenci {
+  id         String    @id @default(cuid())
+  ad         String
+  soyad      String
+  sinif      String
+  veliId     String
+  veli       Veli      @relation(fields: [veliId], references: [id], onDelete: Cascade)
+  soforId    String?
+  sofor      Sofor?    @relation(fields: [soforId], references: [id])
+  adres      String
+  mesafeKm   Float
+  aylikUcret Float
+  aktif      Boolean   @default(true)
+
+  @@index([veliId])
+  @@index([soforId])
 }

@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
+import adminRoutes from './routes/adminRoutes';
 import { authenticate, authorize, AuthRequest } from './middleware/auth';
 
 dotenv.config();
@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 // Public routes
 app.use('/api/auth', authRoutes);
 
-// Protected routes (örnek)
+// Protected example routes
 app.get('/api/profile', authenticate, (req: AuthRequest, res) => {
     res.json({ user: req.user });
 });
@@ -29,8 +29,8 @@ app.get('/api/admin-only', authenticate, authorize('ADMIN'), (req: AuthRequest, 
     res.json({ message: 'Admin erişimi başarılı', user: req.user });
 });
 
-// Admin user routes
-app.use('/api/admin', authenticate, authorize('ADMIN'), userRoutes);
+// Admin CRUD routes
+app.use('/api/admin', adminRoutes);
 
 app.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
