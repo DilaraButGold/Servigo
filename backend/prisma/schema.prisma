@@ -16,7 +16,6 @@ model User {
   role      Role
   createdAt DateTime @default(now())
 
-  // İlişkiler
   veli     Veli?
   sofor    Sofor?
   ogretmen Ogretmen?
@@ -44,20 +43,21 @@ model Sofor {
   aracTipi   String?
   kapasite   Int       @default(20)
   ogrenciler Ogrenci[]
+  devamsizliklar Devamsizlik[]   // Şoföre ait devamsızlık bildirimleri
 }
 
 model Ogretmen {
   id         String    @id @default(cuid())
   userId     String    @unique
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sinif      String?   // Hangi sınıfın öğretmeni olduğu
+  sinif      String?
 }
 
 model Ogrenci {
   id         String    @id @default(cuid())
   ad         String
   soyad      String
-  sinif      String
+  sinif      String?
   veliId     String
   veli       Veli      @relation(fields: [veliId], references: [id], onDelete: Cascade)
   soforId    String?
@@ -66,7 +66,27 @@ model Ogrenci {
   mesafeKm   Float
   aylikUcret Float
   aktif      Boolean   @default(true)
+  devamsizliklar Devamsizlik[]   // Öğrencinin devamsızlık kayıtları
 
   @@index([veliId])
   @@index([soforId])
+}
+
+model Devamsizlik {
+  id        String   @id @default(cuid())
+  ogrenciId String
+  ogrenci   Ogrenci  @relation(fields: [ogrenciId], references: [id], onDelete: Cascade)
+  soforId   String?
+  sofor     Sofor?   @relation(fields: [soforId], references: [id])
+  tarih     DateTime @default(now())
+  neden     String?
+  gecikmeDk Int?
+  tip       DevamsizlikTipi
+  createdAt DateTime @default(now())
+}
+
+enum DevamsizlikTipi {
+  GELMIYOR
+  GEC_KALACAK
+  ERKEN_CIKIS
 }
