@@ -43,7 +43,9 @@ model Sofor {
   aracTipi   String?
   kapasite   Int       @default(20)
   ogrenciler Ogrenci[]
-  devamsizliklar Devamsizlik[]   // Şoföre ait devamsızlık bildirimleri
+  devamsizliklar Devamsizlik[]   // Şoföre ait devamsızlık bildirimleri 
+  konumGecmisi KonumGecmisi[]  
+  servisSeferleri ServisSeferi[] 
 }
 
 model Ogretmen {
@@ -89,4 +91,31 @@ enum DevamsizlikTipi {
   GELMIYOR
   GEC_KALACAK
   ERKEN_CIKIS
+} 
+
+
+model KonumGecmisi {
+  id        String   @id @default(cuid())
+  soforId   String
+  sofor     Sofor    @relation(fields: [soforId], references: [id], onDelete: Cascade)
+  enlem     Float
+  boylam    Float
+  hiz       Float?     // km/sa
+  yon       Float?     // derece
+  createdAt DateTime @default(now())
+
+  @@index([soforId])
+  @@index([createdAt])
+}
+
+model ServisSeferi {
+  id          String   @id @default(cuid())
+  soforId     String
+  sofor       Sofor    @relation(fields: [soforId], references: [id])
+  baslangic   DateTime @default(now())
+  bitis       DateTime?
+  rotaJson    Json?     // durak listesi koordinatları
+  aktif       Boolean  @default(true)
+
+  @@index([soforId, aktif])
 }

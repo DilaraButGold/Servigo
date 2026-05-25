@@ -1,9 +1,6 @@
+import Harita from './pages/Harita';
 function App() {
-    return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-            <h1 className="text-3xl font-bold text-blue-600">Servigo Web</h1>
-        </div>
-    );
+    const soforId = "şoför_id_buraya"; // kendi şoför ID'ni yaz
+    return <Harita soforId={soforId} />;
 }
-
 export default App;
