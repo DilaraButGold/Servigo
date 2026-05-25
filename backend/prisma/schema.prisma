@@ -68,7 +68,9 @@ model Ogrenci {
   mesafeKm   Float
   aylikUcret Float
   aktif      Boolean   @default(true)
-  devamsizliklar Devamsizlik[]   // Öğrencinin devamsızlık kayıtları
+  devamsizliklar Devamsizlik[]   // Öğrencinin devamsızlık kayıtları 
+    odemeler      Odeme[]
+
 
   @@index([veliId])
   @@index([soforId])
@@ -118,4 +120,37 @@ model ServisSeferi {
   aktif       Boolean  @default(true)
 
   @@index([soforId, aktif])
+} 
+
+model AylikUcretKurali {
+  id             String   @id @default(cuid())
+  kmBasinaFiyat  Float    // TL/km
+  minimumUcret   Float
+  guncellenmeTarihi DateTime @default(now())
+}
+
+model Odeme {
+  id            String      @id @default(cuid())
+  ogrenciId     String
+  ogrenci       Ogrenci     @relation(fields: [ogrenciId], references: [id], onDelete: Cascade)
+  tutar         Float
+  ay            Int         // 1-12
+  yil           Int
+  durum         OdemeDurum  // BEKLIYOR, ODENDI, GECIKTI
+  odemeTipi     OdemeTipi   // ONLINE, MANUEL
+  islemId       String?     // İyzico/PayTR işlem ID
+  makbuzUrl     String?     // Manuel ödeme için yüklenen dekont görseli
+  odenmeTarihi  DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+enum OdemeDurum {
+  BEKLIYOR
+  ODENDI
+  GECIKTI
+}
+
+enum OdemeTipi {
+  ONLINE
+  MANUEL
 }

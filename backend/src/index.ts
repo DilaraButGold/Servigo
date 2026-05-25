@@ -5,9 +5,11 @@ import http from 'http';
 import { Server } from 'socket.io';
 import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
-import devamsizlikRoutes from './routes/konumRoutes';
+import devamsizlikRoutes from './routes/devamsizlıkRoutes';
 import konumRoutes from './routes/konumRoutes';
+import odemeRoutes from './routes/odemeRoutes';
 import { authenticate, authorize, AuthRequest } from './middleware/auth';
+import { startPaymentCron } from './Jobs/paymentReminder';
 
 dotenv.config();
 
@@ -25,11 +27,8 @@ const io = new Server(server, {
     }
 });
 
-// Socket.io bağlantı yönetimi
 io.on('connection', (socket) => {
     console.log('Yeni istemci bağlandı:', socket.id);
-
-    // İstemci kendi rolünü ve ID'sini bildirebilir
     socket.on('register', (data) => {
         const { role, id } = data;
         if (role === 'SOFOR' && id) {
@@ -41,12 +40,10 @@ io.on('connection', (socket) => {
             console.log(`Veli ${id} odasına katıldı`);
         }
     });
-
     socket.on('disconnect', () => {
         console.log('İstemci ayrıldı:', socket.id);
     });
 });
-
 
 app.get('/', (req, res) => {
     res.json({ message: 'Servigo API is running 🚐' });
@@ -56,8 +53,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/devamsizlik', devamsizlikRoutes);
 app.use('/api/konum', konumRoutes);
+app.use('/api/odeme', odemeRoutes);
 
-// Protected example routes
 app.get('/api/profile', authenticate, (req: AuthRequest, res) => {
     res.json({ user: req.user });
 });
@@ -66,8 +63,9 @@ app.get('/api/admin-only', authenticate, authorize('ADMIN'), (req: AuthRequest, 
     res.json({ message: 'Admin erişimi başarılı', user: req.user });
 });
 
-// Socket.io instance'ını route'larda kullanmak için
 app.set('io', io);
+
+startPaymentCron();
 
 server.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
