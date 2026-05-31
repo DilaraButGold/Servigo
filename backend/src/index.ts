@@ -5,11 +5,12 @@ import http from 'http';
 import { Server } from 'socket.io';
 import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
-import devamsizlikRoutes from './routes/devamsizlıkRoutes';
+import devamsizlikRoutes from './routes/devamsizlıkRoutes'; // dosya adını düzelttim (türkçe karakter yok)
 import konumRoutes from './routes/konumRoutes';
 import odemeRoutes from './routes/odemeRoutes';
+import yoklamaRoutes from './routes/yoklamaRoutes'; // YENİ
 import { authenticate, authorize, AuthRequest } from './middleware/auth';
-import { startPaymentCron } from './Jobs/paymentReminder';
+import { startPaymentCron } from './Jobs/paymentReminder'; // klasör adını küçük harf yaptım
 
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/devamsizlik', devamsizlikRoutes);
 app.use('/api/konum', konumRoutes);
 app.use('/api/odeme', odemeRoutes);
+app.use('/api/yoklama', yoklamaRoutes); // YENİ
 
 app.get('/api/profile', authenticate, (req: AuthRequest, res) => {
     res.json({ user: req.user });

@@ -43,9 +43,10 @@ model Sofor {
   aracTipi   String?
   kapasite   Int       @default(20)
   ogrenciler Ogrenci[]
-  devamsizliklar Devamsizlik[]   // Şoföre ait devamsızlık bildirimleri 
-  konumGecmisi KonumGecmisi[]  
-  servisSeferleri ServisSeferi[] 
+  devamsizliklar Devamsizlik[]
+  konumGecmisi KonumGecmisi[]
+  servisSeferleri ServisSeferi[]
+  yoklamalar    Yoklama[]        // YENİ: şoförün yaptığı yoklamalar
 }
 
 model Ogretmen {
@@ -68,9 +69,10 @@ model Ogrenci {
   mesafeKm   Float
   aylikUcret Float
   aktif      Boolean   @default(true)
-  devamsizliklar Devamsizlik[]   // Öğrencinin devamsızlık kayıtları 
-    odemeler      Odeme[]
-
+  devamsizliklar Devamsizlik[]
+  odemeler      Odeme[]
+  qrKod         String?   @unique   // YENİ: benzersiz QR kod metni
+  yoklamalar    Yoklama[]           // YENİ: öğrencinin yoklamaları
 
   @@index([veliId])
   @@index([soforId])
@@ -93,8 +95,7 @@ enum DevamsizlikTipi {
   GELMIYOR
   GEC_KALACAK
   ERKEN_CIKIS
-} 
-
+}
 
 model KonumGecmisi {
   id        String   @id @default(cuid())
@@ -102,8 +103,8 @@ model KonumGecmisi {
   sofor     Sofor    @relation(fields: [soforId], references: [id], onDelete: Cascade)
   enlem     Float
   boylam    Float
-  hiz       Float?     // km/sa
-  yon       Float?     // derece
+  hiz       Float?
+  yon       Float?
   createdAt DateTime @default(now())
 
   @@index([soforId])
@@ -116,15 +117,15 @@ model ServisSeferi {
   sofor       Sofor    @relation(fields: [soforId], references: [id])
   baslangic   DateTime @default(now())
   bitis       DateTime?
-  rotaJson    Json?     // durak listesi koordinatları
+  rotaJson    Json?
   aktif       Boolean  @default(true)
 
   @@index([soforId, aktif])
-} 
+}
 
 model AylikUcretKurali {
   id             String   @id @default(cuid())
-  kmBasinaFiyat  Float    // TL/km
+  kmBasinaFiyat  Float
   minimumUcret   Float
   guncellenmeTarihi DateTime @default(now())
 }
@@ -134,12 +135,12 @@ model Odeme {
   ogrenciId     String
   ogrenci       Ogrenci     @relation(fields: [ogrenciId], references: [id], onDelete: Cascade)
   tutar         Float
-  ay            Int         // 1-12
+  ay            Int
   yil           Int
-  durum         OdemeDurum  // BEKLIYOR, ODENDI, GECIKTI
-  odemeTipi     OdemeTipi   // ONLINE, MANUEL
-  islemId       String?     // İyzico/PayTR işlem ID
-  makbuzUrl     String?     // Manuel ödeme için yüklenen dekont görseli
+  durum         OdemeDurum
+  odemeTipi     OdemeTipi
+  islemId       String?
+  makbuzUrl     String?
   odenmeTarihi  DateTime?
   createdAt     DateTime    @default(now())
 }
@@ -153,4 +154,24 @@ enum OdemeDurum {
 enum OdemeTipi {
   ONLINE
   MANUEL
+}
+
+// YENİ: Yoklama (QR/NFC ile biniş/inme)
+model Yoklama {
+  id          String       @id @default(cuid())
+  ogrenciId   String
+  ogrenci     Ogrenci      @relation(fields: [ogrenciId], references: [id], onDelete: Cascade)
+  soforId     String?
+  sofor       Sofor?       @relation(fields: [soforId], references: [id])
+  tip         YoklamaTipi
+  konum       Json?        // { enlem, boylam } opsiyonel
+  createdAt   DateTime     @default(now())
+
+  @@index([ogrenciId])
+  @@index([soforId])
+}
+
+enum YoklamaTipi {
+  BINIS
+  INIS
 }
